@@ -1,42 +1,11 @@
 class GramsController < ApplicationController
-  before_action :authenticate_user!, only: [:new, :create]
-  
-  def destroy
-    @gram = Gram.find_by_id(params[:id])
-    return render_not_found if @gram.blank?
-
-    @gram.destroy
-    redirect_to root_path
-  end
-  
-  def update
-    @gram = Gram.find_by_id(params[:id])
-    return render_not_found if @gram.blank?
-    
-    @gram.update_attributes(gram_params)
-    
-    if @gram.valid?
-      redirect_to root_path
-    else
-      return render :edit, status: :unprocessable_entity
-    end
-  end
-  
-  def new
-    @gram = Gram.new
-  end
+  before_action :authenticate_user!, only: [:new, :create, :edit, :update, :destroy]
   
   def index
   end
   
-  def show
-    @gram = Gram.find_by_id(params[:id])
-    return render_not_found if @gram.blank?
-  end
-  
-  def edit
-    @gram = Gram.find_by_id(params[:id])
-    return render_not_found if @gram.blank?
+  def new
+    @gram = Gram.new
   end
   
   def create
@@ -48,6 +17,37 @@ class GramsController < ApplicationController
     end
   end
   
+  def show
+    @gram = Gram.find_by_id(params[:id])
+    return render_not_found if @gram.blank?
+  end
+  
+  def edit
+    @gram = Gram.find_by_id(params[:id])
+    return render_not_found if @gram.blank?
+    return render_not_found(:forbidden) if @gram.user != current_user
+  end
+  
+  def update
+    @gram = Gram.find_by_id(params[:id])
+    return render_not_found if @gram.blank?
+    return render_not_found(:forbidden) if @gram.user != current_user
+    @gram.update_attributes(gram_params)
+    if @gram.valid?
+      redirect_to root_path
+    else
+      return render :edit, status: :unprocessable_entity
+    end
+  end
+  
+  def destroy
+    @gram = Gram.find_by_id(params[:id])
+    return render_not_found if @gram.blank?
+    return render_not_found(:forbidden) if @gram.user != current_user
+    @gram.destroy
+    redirect_to root_path
+  end
+  
   private
   
   def gram_params
@@ -55,7 +55,7 @@ class GramsController < ApplicationController
   end
   
   def render_not_found
-    render plain: 'Not Found :(', status: :not_found
+    render plain: '#{status.to_s.titleize} :(', status: status
   end
   
 end
