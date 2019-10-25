@@ -144,11 +144,16 @@ RSpec.describe GramsController, type: :controller do
       expect(response).to redirect_to new_user_session_path
     end
     
-    it "should successfully show the new form" do
+    it "should successfully create the new form" do
       user = FactoryBot.create(:user)
       sign_in user
       
-      post :create, params: { gram: { message: 'Hello!' } }
+      post :create, params: { 
+        gram: { 
+          message: 'Hello!', 
+          picture: fixture_file_upload("/picture.png", 'image/png')
+        } 
+      }
       expect(response).to redirect_to root_path
       
       gram = Gram.last
